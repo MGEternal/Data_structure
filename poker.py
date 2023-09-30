@@ -6,7 +6,6 @@ RANKS = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'Jack', 'Queen', 'King', 
 VALUES = {'2': 2, '3': 3, '4': 4, '5': 5, '6': 6, '7': 7, '8': 8, '9': 9, '10': 10, 'Jack': 11, 'Queen': 12, 'King': 13,
           'Ace': 14}
 
-
 # Define a Card class
 class Card:
     def __init__(self, rank, suit):
@@ -21,7 +20,6 @@ class Deck:
     def __init__(self):
         self.cards = [Card(rank, suit) for rank in RANKS for suit in SUITS]
         random.shuffle(self.cards)
-
     def deal_card(self):
         return self.cards.pop()
 
@@ -32,7 +30,6 @@ class Hand:
         self.chips = ''
     def add_card(self, card):
         self.cards.append(card)
-
     def __str__(self):
         return ', '.join(str(card) for card in self.cards)
 
@@ -43,45 +40,127 @@ class Card_table:
         self.cards.append(card)
 # Function to compare hands and determine the winner
 
+class Node:
+    def __init__(self, data, chips, next=None):
+        self.data = data
+        self.chips = chips
+        if next is not None:
+            self.next = next
+        else:
+            self.next = None
 
+class Circular_link_list:
+    def __init__(self):
+        self.head = None
 
+    def Append(self, data, chips):
+        new_node = Node(data, chips)
+        if self.head is None:
+            self.head = new_node
+            new_node.next = self.head
+            new_node.hand = Hand()  # Create a Hand object for the player
+        else:
+            current = self.head
+            while True:
+                if current.next == self.head:
+                    current.next = new_node
+                    new_node.next = self.head
+                    new_node.hand = Hand()  # Create a Hand object for the player
+                    break
+                else:
+                    current = current.next
+        new_node.hand.chips = chips
+        
+    def __str__(self):
+        if self.head is None:
+            return "Empty Circular Linked List"
+        else:
+            values = []
+            current = self.head
+            while True:
+                values.append(f"{current.data} ({current.chips} chips)")
+                current = current.next
+                if current == self.head:
+                    break
+            return " -> ".join(values)
 
+class Node:
+    def __init__(self, data, chips, next=None):
+        self.data = data
+        self.chips = chips
+        if next is not None:
+            self.next = next
+        else:
+            self.next = None
 
-# Pregame function
-number_played = int(input("Number of players : "))
-player_list = []
-for i in range(number_played):
-    name = input(f'Name of player {i+1} : ')
-    player_dict = {'keys': name, 'values': ""}
-    player_list.append(player_dict)
+def setting_game(circular_link_list):
+    global set_buyin 
+    set_buyin = int(input("Enter amount of buy-in: "))
+    players = int(input("Enter number of players: "))
+    for i in range(players):
+        i = i + 1
+        name = input(f"Enter name of player {i}: ")
+        circular_link_list.Append(name, set_buyin)
+    return Deck()  # Return a deck after initializing players
 
-deck = Deck()
+def deal_cards(deck, circular_link_list):
+    current_player = circular_link_list.head
+    while True:
+        card = deck.deal_card()
+        current_player.hand.add_card(card)
+        current_player = current_player.next
+        if current_player == circular_link_list.head:
+            break
 
-for item in player_list:
-    pre_game_Hand = Hand()
-    pre_game_Hand.add_card(deck.deal_card())
-    item['values'] = str(pre_game_Hand)  # Store the string representation of the hand
+def print_player_hands(circular_link_list):
+    current_player = circular_link_list.head
+    while True:
+        print(f"{current_player.data}'s Hand: {current_player.hand}")
+        current_player = current_player.next
+        if current_player == circular_link_list.head:
+            break
 
-Set_buy_in = int(input("Set buy in of table : "))
-score_dict = {}
+def calculate_hand_value(hand):
+    value = 0
+    for card in hand.cards:
+        value += VALUES[card.rank]
+    return value
 
-for item in player_list:
-    hand_str = item['values']
-    hand_list = [Card(card_str.split()[0], card_str.split()[-1]) for card_str in hand_str.split(', ')]
-    if all(card.rank in VALUES for card in hand_list):  # Check if all card ranks are in VALUES
-        hand_suits = set(card.suit for card in hand_list)
-        if len(hand_suits) == 1:  # Check if all cards have the same suit
-            score_dict[item['keys']] = sum(VALUES[card.rank] for card in hand_list)
+# Function to sort players based on hand value
+def sort_players_by_hand_value(circular_link_list):
+    players = []
+    current_player = circular_link_list.head
+    while True:
+        player = (current_player.data, current_player.hand)
+        players.append(player)
+        current_player = current_player.next
+        if current_player == circular_link_list.head:
+            break
 
-# Sort the score_dict based on values
-sorted_score_list = sorted(score_dict, key=lambda x: (score_dict[x], x), reverse=True)
+    def sort_key(player):
+        hand_value = calculate_hand_value(player[1])
+        card_suit = player[1].cards[0].suit  # Assuming all cards have the same suit
+        return (-hand_value, SUITS.index(card_suit))
 
-print(str(player_list))
-print("Sorted score list:", ', '.join(sorted_score_list))
+    players.sort(key=sort_key)
+    return players
 
-    
-    
+# Function to create a new Circular_link_list based on sorted players
+def create_sorted_circular_link_list(players):
+    sorted_cll = Circular_link_list()
+    for player_data, _ in players:
+        sorted_cll.Append(player_data, set_buyin)  # The second argument (chips) is not relevant here
+    return sorted_cll
+set_buyin = "0"
+cll = Circular_link_list()
+deck = setting_game(cll)
+deal_cards(deck, cll)
+print_player_hands(cll)
 
+# Sort players by hand value
+sorted_players = sort_players_by_hand_value(cll)
 
-   
-
+# Create a new Circular_link_list with sorted players
+sorted_cll = create_sorted_circular_link_list(sorted_players)
+print("\nSorted Circular Linked List:")
+print(sorted_cll)
