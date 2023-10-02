@@ -151,16 +151,65 @@ def create_sorted_circular_link_list(players):
     for player_data, _ in players:
         sorted_cll.Append(player_data, set_buyin)  # The second argument (chips) is not relevant here
     return sorted_cll
+
+
+def game_round_betting(current_cll, deck):
+    current_player = current_cll.head
+
+    # Deal two cards to each player's hand
+    for _ in range(2):
+        while True:
+            card = deck.deal_card()
+            current_player.hand.add_card(card)
+            current_player = current_player.next
+            if current_player == current_cll.head:
+                break
+
+    while True:
+        # Display current player's hand and chips
+        print(f"{current_player.data}'s Hand: {current_player.hand}")
+        print(f"{current_player.data}'s Chips: {current_player.chips}")
+
+        # Implement your betting logic here
+        # For example, you can ask the player to input their bet
+        while True:
+            try:
+                bet = int(input(f"{current_player.data}, enter your bet: "))
+                if 0 <= bet <= current_player.chips:
+                    break
+                else:
+                    print("Invalid bet. Please enter a valid bet.")
+            except ValueError:
+                print("Invalid input. Please enter a valid number.")
+
+        # Deduct the bet amount from the player's chips
+        current_player.chips -= bet
+
+        # Move to the next player
+        current_player = current_player.next
+
+        # Check if all players have placed their bets
+        if current_player == current_cll.head:
+            break
+
+    
+
+
 set_buyin = "0"
 cll = Circular_link_list()
 deck = setting_game(cll)
 deal_cards(deck, cll)
 print_player_hands(cll)
-
+print("############################################")
 # Sort players by hand value
 sorted_players = sort_players_by_hand_value(cll)
 
 # Create a new Circular_link_list with sorted players
 sorted_cll = create_sorted_circular_link_list(sorted_players)
+deck = Deck()
+game_round_betting(sorted_cll,deck)
 print("\nSorted Circular Linked List:")
 print(sorted_cll)
+print("Player Information After Betting:")
+print_player_hands(cll)
+
