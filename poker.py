@@ -27,6 +27,7 @@ class Deck:
 class Hand:
     def __init__(self):
         self.cards = []
+        self.status = None
         self.chips = ''
     def add_card(self, card):
         self.cards.append(card)
@@ -70,7 +71,17 @@ class Circular_link_list:
                 else:
                     current = current.next
         new_node.hand.chips = chips
-        
+    
+    def add_status(self, player_data, status):
+        current = self.head
+        while True:
+            if current.data == player_data:
+                current.hand.status = status
+                break
+            current = current.next
+            if current == self.head:
+                break
+            
     def __str__(self):
         if self.head is None:
             return "Empty Circular Linked List"
@@ -78,11 +89,17 @@ class Circular_link_list:
             values = []
             current = self.head
             while True:
-                values.append(f"{current.data} ({current.chips} chips)")
+                player_info = f"{current.data} ({current.chips} chips)"
+                if current.hand.status:
+                    player_info += f" - Status: {current.hand.status}"
+                else:
+                    player_info += " - Status: None"
+                values.append(player_info)
                 current = current.next
                 if current == self.head:
                     break
-            return " -> ".join(values)
+        return " -> ".join(values)
+
 
 class Node:
     def __init__(self, data, chips, next=None):
@@ -114,11 +131,19 @@ def deal_cards(deck, circular_link_list):
 
 def print_player_hands(circular_link_list):
     current_player = circular_link_list.head
+    values = []
     while True:
-        print(f"{current_player.data}'s Hand: {current_player.hand}")
+        player_info = f"{current_player.data} ({current_player.chips} chips"
+        if current_player.hand.status:
+            player_info += f" | Status: {current_player.hand.status}"
+        player_info += ")"
+        values.append(player_info)
         current_player = current_player.next
         if current_player == circular_link_list.head:
             break
+    player_info = " -> ".join(values)
+    print(player_info)
+
 
 def calculate_hand_value(hand):
     value = 0
@@ -145,12 +170,26 @@ def sort_players_by_hand_value(circular_link_list):
     players.sort(key=sort_key)
     return players
 
-# Function to create a new Circular_link_list based on sorted players
 def create_sorted_circular_link_list(players):
     sorted_cll = Circular_link_list()
-    for player_data, _ in players:
-        sorted_cll.Append(player_data, set_buyin)  # The second argument (chips) is not relevant here
+    num_players = len(players)
+    
+    for i, (player_data, _) in enumerate(players):
+        sorted_cll.Append(player_data, set_buyin)  # Create the sorted list without statuses
+    
+    # Now, assign statuses to the players
+    for i, (_, status) in enumerate(players):
+        if i == num_players - 1:
+            sorted_cll.add_status(players[i][0], "Dealer")
+        elif i == num_players - 2:
+            sorted_cll.add_status(players[i][0], "Big Blind")
+        elif i == num_players - 3:
+            sorted_cll.add_status(players[i][0], "Small Blind")
+    
     return sorted_cll
+
+
+
 
 
 def game_round_betting(current_cll, deck):
@@ -165,41 +204,51 @@ def game_round_betting(current_cll, deck):
             if current_player == current_cll.head:
                 break
 
+    # Initialize the current_bet to zero
+    current_bet = 0
+
     while True:
         # Display current player's hand and chips
         print(f"{current_player.data}'s Hand: {current_player.hand}")
         print(f"{current_player.data}'s Chips: {current_player.chips}")
 
         # Implement your betting logic here
-        # For example, you can ask the player to input their bet
-        while True:
-            try:
-                bet = int(input(f"{current_player.data}, enter your bet: "))
-                if 0 <= bet <= current_player.chips:
+        if current_player.chips > 0:
+            while True:
+                try:
+                    bet = int(input(f"{current_player.data}, enter your bet (0 to check/fold): "))
+                    if current_bet == 0:
+                        if bet == 0:
+                            print("You check.")
+                        elif bet > 0:
+                            current_bet = bet
+                        else:
+                            print("Invalid bet. Please enter a valid bet.")
+                    elif bet == 0:
+                        print(f"{current_player.data} folds.")
+                    elif bet < current_bet:
+                        print(f"You have bet less than the current bet ({current_bet}). Please enter a higher bet.")
+                    elif bet > current_player.chips:
+                        print("Invalid bet. You don't have enough chips.")
+                    else:
+                        current_bet = bet
                     break
-                else:
-                    print("Invalid bet. Please enter a valid bet.")
-            except ValueError:
-                print("Invalid input. Please enter a valid number.")
+                except ValueError:
+                    print("Invalid input. Please enter a valid number.")
 
-        # Deduct the bet amount from the player's chips
-        current_player.chips -= bet
-
+            # Deduct the bet amount from the player's chips
+            if bet != 0:
+                current_player.chips -= bet
         # Move to the next player
         current_player = current_player.next
-
         # Check if all players have placed their bets
         if current_player == current_cll.head:
             break
-
-    
-
 
 set_buyin = "0"
 cll = Circular_link_list()
 deck = setting_game(cll)
 deal_cards(deck, cll)
-print_player_hands(cll)
 print("############################################")
 # Sort players by hand value
 sorted_players = sort_players_by_hand_value(cll)
@@ -208,8 +257,5 @@ sorted_players = sort_players_by_hand_value(cll)
 sorted_cll = create_sorted_circular_link_list(sorted_players)
 deck = Deck()
 game_round_betting(sorted_cll,deck)
-print("\nSorted Circular Linked List:")
-print(sorted_cll)
-print("Player Information After Betting:")
-print_player_hands(cll)
+print_player_hands(sorted_cll)
 
