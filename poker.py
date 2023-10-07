@@ -28,15 +28,17 @@ class Hand:
     def __init__(self):
         self.cards = []
         self.status = None
+        self.flag = None
         self.chips = ''
     def add_card(self, card):
         self.cards.append(card)
     def __str__(self):
         return ', '.join(str(card) for card in self.cards)
 
-class Card_table:
+class Table:
     def __init__(self):
         self.cards = []
+        self.pots = 0
     def add_card(self, card):
         self.cards.append(card)
 # Function to compare hands and determine the winner
@@ -72,6 +74,33 @@ class Circular_link_list:
                     current = current.next
         new_node.hand.chips = chips
     
+    def check_flags(self):
+        if self.head is None:
+            return False
+
+        current = self.head
+        first_bet_flag = None  # To track the first node with a "bet" flag
+        all_call_flags = True  # To track if all nodes have "call" flags
+
+        while True:
+            if current.flag == "bet":
+                if first_bet_flag is None:
+                    first_bet_flag = current
+                else:
+                    return False  # More than one node has a "bet" flag
+
+            if current.flag != "call":
+                all_call_flags = False
+
+            current = current.next
+            if current == self.head:
+                break
+
+        if first_bet_flag is not None:
+            return all_call_flags
+        else:
+            return True 
+    
     def add_status(self, player_data, status):
         current = self.head
         while True:
@@ -81,7 +110,35 @@ class Circular_link_list:
             current = current.next
             if current == self.head:
                 break
-            
+    
+    def delete_node(self, player_data):
+        if self.head is None:
+            return
+
+        # Case 1: If the head node needs to be deleted
+        if self.head.data == player_data:
+            current = self.head
+            while current.next != self.head:
+                current = current.next
+            if self.head == self.head.next:  # Only one node in the list
+                self.head = None
+            else:
+                current.next = self.head.next
+                self.head = self.head.next
+        else:
+            current = self.head
+            prev = None
+            while True:
+                if current.data == player_data:
+                    prev.next = current.next
+                    if current == self.head:
+                        self.head = current.next
+                    break
+                prev = current
+                current = current.next
+                if current == self.head:
+                    break
+           
     def __str__(self):
         if self.head is None:
             return "Empty Circular Linked List"
@@ -101,14 +158,7 @@ class Circular_link_list:
         return " -> ".join(values)
 
 
-class Node:
-    def __init__(self, data, chips, next=None):
-        self.data = data
-        self.chips = chips
-        if next is not None:
-            self.next = next
-        else:
-            self.next = None
+
 
 def setting_game(circular_link_list):
     global set_buyin 
@@ -192,17 +242,8 @@ def create_sorted_circular_link_list(players):
 
 
 
-def game_round_betting(current_cll, deck):
+def game_round_betting(current_cll, deck,table):
     current_player = current_cll.head
-
-    # Deal two cards to each player's hand
-    for _ in range(2):
-        while True:
-            card = deck.deal_card()
-            current_player.hand.add_card(card)
-            current_player = current_player.next
-            if current_player == current_cll.head:
-                break
 
     # Initialize the current_bet to zero
     current_bet = 0
@@ -212,6 +253,33 @@ def game_round_betting(current_cll, deck):
         print(f"{current_player.data}'s Hand: {current_player.hand}")
         print(f"{current_player.data}'s Chips: {current_player.chips}")
 
+        # Check if the player should contribute as big blind or small blind based on their status
+        if current_player.hand.status == "Big Blind":
+            big_blind = 10  # Big blind amount
+            if current_player.chips >= big_blind:
+                current_player.chips -= big_blind
+                table.pots += big_blind
+                print(f"{current_player.data} posts the big blind.")
+            else:
+                # Handle the case where the player doesn't have enough chips to post the big blind
+                print(f"{current_player.data} doesn't have enough chips to post the big blind.")
+                current_cll.delete_node(current_player.data)
+                current_player.flag = "folds"
+                print(f"{current_player.data} folds.")
+        elif current_player.hand.status == "Small Blind":
+            small_blind = 5  # Small blind amount
+            if current_player.chips >= small_blind:
+                current_player.chips -= small_blind
+                table.pots += small_blind
+                print(f"{current_player.data} posts the small blind.")
+            else:
+                # Handle the case where the player doesn't have enough chips to post the small blind
+                print(f"{current_player.data} doesn't have enough chips to post the small blind.")
+                current_cll.delete_node(current_player.data)
+                current_player.flag = "folds"
+                print(f"{current_player.data} folds.")
+
+        print_player_hands(current_cll)
         # Implement your betting logic here
         if current_player.chips > 0:
             while True:
@@ -219,15 +287,38 @@ def game_round_betting(current_cll, deck):
                     bet = int(input(f"{current_player.data}, enter your bet (0 to check/fold): "))
                     if current_bet == 0:
                         if bet == 0:
-                            print("You check.")
+                            current_player.flag = "call"
+                            print(f"{current_player.data} check.")
                         elif bet > 0:
                             current_bet = bet
+                            current_player.flag = "bet"
+                            print(f"{current_player.data} bet.")
                         else:
                             print("Invalid bet. Please enter a valid bet.")
                     elif bet == 0:
+                        current_cll.delete_node(current_player.data)
+                        current_player.flag = "folds"
                         print(f"{current_player.data} folds.")
                     elif bet < current_bet:
-                        print(f"You have bet less than the current bet ({current_bet}). Please enter a higher bet.")
+                        chk = True
+                        while chk:
+                            print(f"You have bet less than the current bet ({current_bet}). Please enter a higher bet.")
+                            bet = int(input(f"{current_player.data}, enter your bet (0 to check/fold): "))
+                            
+                            if bet == 0:
+                                print(f"{current_player.data} folds.")
+                                current_player.flag = "folds"
+                                chk = False
+                            elif bet == current_bet:
+                                current_player.flag = "call"
+                                print(f"{current_player.data} call.")
+                                chk = False
+                            elif bet > current_bet :
+                                current_player.flag = "bet"
+                                print(f"{current_player.data} bet.")
+                                chk = False
+                            elif bet < current_bet :
+                                chk = True
                     elif bet > current_player.chips:
                         print("Invalid bet. You don't have enough chips.")
                     else:
@@ -239,11 +330,13 @@ def game_round_betting(current_cll, deck):
             # Deduct the bet amount from the player's chips
             if bet != 0:
                 current_player.chips -= bet
+                current_cll.pot += bet
         # Move to the next player
         current_player = current_player.next
         # Check if all players have placed their bets
-        if current_player == current_cll.head:
+        if current_cll.check_flags:
             break
+
 
 set_buyin = "0"
 cll = Circular_link_list()
@@ -256,6 +349,8 @@ sorted_players = sort_players_by_hand_value(cll)
 # Create a new Circular_link_list with sorted players
 sorted_cll = create_sorted_circular_link_list(sorted_players)
 deck = Deck()
-game_round_betting(sorted_cll,deck)
-print_player_hands(sorted_cll)
+table = Table()
+
+game_round_betting(sorted_cll,deck,table)
+
 
