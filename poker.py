@@ -242,16 +242,19 @@ def create_sorted_circular_link_list(players):
 
 
 
-def game_round_betting(current_cll, deck,table):
+def pre_flop(current_cll, deck, table):
     current_player = current_cll.head
 
-    # Initialize the current_bet to zero
-    current_bet = 0
+    # Initialize the current_bet to 10
+    current_bet = 10  # Initial bet set to 10
 
     while True:
-        # Display current player's hand and chips
+        # Deal the player's cards
+        card1 = deck.deal_card()
+        card2 = deck.deal_card()
+        current_player.hand.add_card(card1)
+        current_player.hand.add_card(card2)
         print(f"{current_player.data}'s Hand: {current_player.hand}")
-        print(f"{current_player.data}'s Chips: {current_player.chips}")
 
         # Check if the player should contribute as big blind or small blind based on their status
         if current_player.hand.status == "Big Blind":
@@ -280,21 +283,21 @@ def game_round_betting(current_cll, deck,table):
                 print(f"{current_player.data} folds.")
 
         print_player_hands(current_cll)
+
         # Implement your betting logic here
         if current_player.chips > 0:
             while True:
                 try:
+                    print(f"{current_player.data}'s Chips: {current_player.chips}")
                     bet = int(input(f"{current_player.data}, enter your bet (0 to check/fold): "))
-                    if current_bet == 0:
-                        if bet == 0:
+                    if current_bet == 10:  # Check if the current bet is equal to the initial bet (10)
+                        if bet ==  10 or current_player.hand.status == "Small Blind" and bet == 5 or bet == 0 and current_player.hand.status == "Big Blind":
                             current_player.flag = "call"
                             print(f"{current_player.data} check.")
                         elif bet > 0:
                             current_bet = bet
                             current_player.flag = "bet"
                             print(f"{current_player.data} bet.")
-                        else:
-                            print("Invalid bet. Please enter a valid bet.")
                     elif bet == 0:
                         current_cll.delete_node(current_player.data)
                         current_player.flag = "folds"
@@ -313,11 +316,11 @@ def game_round_betting(current_cll, deck,table):
                                 current_player.flag = "call"
                                 print(f"{current_player.data} call.")
                                 chk = False
-                            elif bet > current_bet :
+                            elif bet > current_bet:
                                 current_player.flag = "bet"
                                 print(f"{current_player.data} bet.")
                                 chk = False
-                            elif bet < current_bet :
+                            elif bet < current_bet:
                                 chk = True
                     elif bet > current_player.chips:
                         print("Invalid bet. You don't have enough chips.")
@@ -330,12 +333,15 @@ def game_round_betting(current_cll, deck,table):
             # Deduct the bet amount from the player's chips
             if bet != 0:
                 current_player.chips -= bet
-                current_cll.pot += bet
+                table.pots += bet
         # Move to the next player
+        if current_player.hand.status == "Dealer":
+            break
         current_player = current_player.next
         # Check if all players have placed their bets
-        if current_cll.check_flags:
-            break
+        
+
+        
 
 
 set_buyin = "0"
@@ -351,6 +357,6 @@ sorted_cll = create_sorted_circular_link_list(sorted_players)
 deck = Deck()
 table = Table()
 
-game_round_betting(sorted_cll,deck,table)
+pre_flop(sorted_cll,deck,table)
 
 
