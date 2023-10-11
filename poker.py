@@ -290,19 +290,22 @@ def pre_flop(current_cll, deck, table):
                 try:
                     print(f"{current_player.data}'s Chips: {current_player.chips}")
                     bet = int(input(f"{current_player.data}, enter your bet (0 to check/fold): "))
-                    if current_bet == 10:  # Check if the current bet is equal to the initial bet (10)
-                        if bet ==  10 or current_player.hand.status == "Small Blind" and bet == 5 or bet == 0 and current_player.hand.status == "Big Blind":
-                            current_player.flag = "call"
-                            print(f"{current_player.data} check.")
-                        elif bet > 0:
-                            current_bet = bet
-                            current_player.flag = "bet"
-                            print(f"{current_player.data} bet.")
+                    
+                    
+                    
+                    
+                    if (bet ==  10) or (current_player.hand.status == "Small Blind" and bet == 5) or (bet == 0 and current_player.hand.status == "Big Blind"):
+                        current_player.flag = "call"
+                        print(f"{current_player.data} call.")
+                    elif bet > 10:
+                        current_bet = bet
+                        current_player.flag = "bet"
+                        print(f"{current_player.data} bet.")
                     elif bet == 0:
                         current_cll.delete_node(current_player.data)
                         current_player.flag = "folds"
                         print(f"{current_player.data} folds.")
-                    elif bet < current_bet:
+                    elif bet < 10 :
                         chk = True
                         while chk:
                             print(f"You have bet less than the current bet ({current_bet}). Please enter a higher bet.")
@@ -312,7 +315,7 @@ def pre_flop(current_cll, deck, table):
                                 print(f"{current_player.data} folds.")
                                 current_player.flag = "folds"
                                 chk = False
-                            elif bet == current_bet:
+                            elif bet == current_bet or bet == 0:
                                 current_player.flag = "call"
                                 print(f"{current_player.data} call.")
                                 chk = False
@@ -335,6 +338,7 @@ def pre_flop(current_cll, deck, table):
                 current_player.chips -= bet
                 table.pots += bet
         # Move to the next player
+        bet = 0
         if current_player.hand.status == "Dealer":
             break
         current_player = current_player.next
