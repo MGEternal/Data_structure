@@ -1,6 +1,6 @@
 import string, math, random
 
-class Card (object):
+class checkCard (object):
   RANKS = (2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14)
 
   SUITS = ('S', 'D', 'H', 'C')
@@ -44,9 +44,9 @@ class Card (object):
 class Deck (object):
   def __init__ (self):
     self.deck = []
-    for suit in Card.SUITS:
-      for rank in Card.RANKS:
-        card = Card (rank, suit)
+    for suit in checkCard.SUITS:
+      for rank in checkCard.RANKS:
+        card = checkCard (rank, suit)
         self.deck.append(card)
 
   def shuffle (self):

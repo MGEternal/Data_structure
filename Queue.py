@@ -9,13 +9,30 @@ class Queue:
         return len(self.items) == 0
     def Size(self):
         return len(self.items)
-    
+    def shuffle(self):
+        Q_len = (len(self.items[0])//2)
+        str = self.items[0]
+        first = str[0:Q_len]
+        second = str[Q_len:]
+        Q1=Queue()
+        Q2=Queue()
+        list = []
+        for i in first:
+            Q1.enQueue(i)
+        
+        for j in second:
+            Q2.enQueue(j)
+
+        chk = 0
+        for i in range(len(first)):
+            list.append(Q1.deQueue())
+            
+            list.append(Q2.deQueue())
+            
+                
+        return "".join(list)
 Q = Queue()
-Q.enQueue("A")
-Q.enQueue("B")
-Q.enQueue("C")
-Q.enQueue("D")
-Q.enQueue("E")
-Q.enQueue("F")
-for i in range(Q.Size()):
-    print(Q.deQueue())
+Q.enQueue("ABCDEFGH")
+
+res = Q.shuffle()
+print(res)
