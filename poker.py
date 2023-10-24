@@ -1,6 +1,8 @@
 import random
-import copy
+import os
 
+
+    
 # Define constants for the game
 class checkCard (object):
   RANKS = (2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14)
@@ -366,8 +368,9 @@ def pre_flop(current_cll, deck, table):
                     print(f'Enter 1 for folds. ')
                     print(f'Enter 2 for call. ')
                     print(f'Enter 3 for bet. ')
+                    print(f'Enter 4 for all in. ')
                     chk = int(input(f"{current_player.data}, enter your choice : "))
-                    while chk != 1 and chk != 2 and chk != 3 :
+                    while chk != 1 and chk != 2 and chk != 3 and chk != 4:
                         chk = int(input(f"{current_player.data}, enter your choice : "))
                         
                     if chk == 1:
@@ -397,10 +400,10 @@ def pre_flop(current_cll, deck, table):
                                 current_player.hand.betting = current_bet
                                 if current_player.hand.status == "big blind":
                                     current_player.hand.status = "big"
-                                    current_player.chips += 10
+                                    #current_player.chips += 10
                                 elif    current_player.hand.status == "small blind":
                                     current_player.hand.status = "small"
-                                    current_player.chips += 5
+                                    #current_player.chips += 5
                             
                     elif chk == 3 :
                         bet = int(input("Enter your bet : "))
@@ -413,16 +416,29 @@ def pre_flop(current_cll, deck, table):
                         current_player.chips -= bet
                         if current_player.hand.status == "big blind":
                             current_player.hand.status = "big"
-                            current_player.chips += 10
+                            #current_player.chips += 10
                         elif    current_player.hand.status == "small blind":
                             current_player.hand.status = "small"
-                            current_player.chips += 5
+                            #current_player.chips += 5
                         table.pots += bet
                         current_cll.head = current_player.next
                         current_cll.tail = current_player
                         game_betting_for_pf(current_cll,bet,table)
                         flag_bet = True
                         break
+                    
+                    elif   chk == 4 :
+                            print("you all in your chips")
+                            print(f"Almost {current_player.chips}")
+                            table.pots += current_player.chips
+                            betting_game(current_cll,current_player.chips,table)
+                            current_player.chips = 0
+                            current_player.hand.flag == "all in"
+                            if current_player.hand.status == "big blind":
+                                current_player.hand.status = "big"
+                            elif    current_player.hand.status == "small blind":
+                                current_player.hand.status = "small"
+                                
                     print("###################################################################")    
                     break
                 except ValueError:
@@ -439,6 +455,11 @@ def pre_flop(current_cll, deck, table):
         if current_player.next == current_cll.head:
             break
         current_player = current_player.next
+        input("Enter for next player turn")
+        if os.name == 'posix':
+            os.system('clear')  # Clear the screen on Unix-based systems
+        else:
+            os.system('cls')  # Clear the screen on Windows
         # Check if all players have placed their bets
 
 
@@ -455,11 +476,16 @@ def game_betting_for_pf(current_cll, last_bet, table):
     while True:
         # Deal the player's cards
         
-        if current_player.hand.flag == "folds":
+        if current_player.hand.flag == "folds" or current_player.hand.flag == "all in":
             if current_player.next == current_cll.head:
                 break
             current_player = current_player.next
             continue
+        input("Enter for next player turn")
+        if os.name == 'posix':
+            os.system('clear')  # Clear the screen on Unix-based systems
+        else:
+            os.system('cls')  # Clear the screen on Windows
         print("########################## game_betting_for_pf ###################################")
         if current_player.hand.status == "Big Blind":
             big_blind = 10  # Big blind amount
@@ -500,8 +526,9 @@ def game_betting_for_pf(current_cll, last_bet, table):
                         print(f'Enter 1 for folds. ')
                         print(f'Enter 2 for call. ')
                         print(f'Enter 3 for bet. ')
+                        print(f'Enter 4 for all in. ')
                         chk = int(input(f"{current_player.data}, enter your choice : "))
-                        while chk != 1 and chk != 2 and chk != 3 :
+                        while chk != 1 and chk != 2 and chk != 3 and chk != 4:
                             chk = int(input(f"{current_player.data}, enter your choice : "))
                             
                         if chk == 1:
@@ -520,10 +547,10 @@ def game_betting_for_pf(current_cll, last_bet, table):
                                 current_player.hand.betting += (current_bet-current_player.hand.betting)
                                 if current_player.hand.status == "big blind":
                                     current_player.hand.status = "big"
-                                    current_player.chips += 10
+                                    #current_player.chips += 10
                                 elif    current_player.hand.status == "small blind":
                                     current_player.hand.status = "small"
-                                    current_player.chips += 5
+                                    #current_player.chips += 5
                         elif chk == 3 :
                             bet = int(input("Enter your bet : "))
                             while bet < current_bet :
@@ -534,18 +561,30 @@ def game_betting_for_pf(current_cll, last_bet, table):
                             current_player.chips -= (bet-current_player.hand.betting)
                             if current_player.hand.status == "big blind":
                                 current_player.hand.status = "big"
-                                current_player.chips += 10
+                                #current_player.chips += 10
                             elif    current_player.hand.status == "small blind":
                                 current_player.hand.status = "small"
-                                current_player.chips += 5
+                                #current_player.chips += 5
                             table.pots += (bet-current_player.hand.betting)
                             current_cll.head = current_player.next
                             current_cll.tail = current_player
+                            
                             game_betting_for_pf(current_cll,bet,table)
                             flag_bet = True
                             break
-                            
-                        print("###################################################################")    
+                        elif   chk == 4 :
+                            print("you all in your chips")
+                            print(f"Almost {current_player.chips}")
+                            table.pots += current_player.chips
+                            betting_game(current_cll,current_player.chips,table)
+                            current_player.chips = 0
+                            current_player.hand.flag == "all in"
+                            if current_player.hand.status == "big blind":
+                                current_player.hand.status = "big"
+                            elif    current_player.hand.status == "small blind":
+                                current_player.hand.status = "small"
+                        print("###################################################################")   
+                         
                         break
                     except ValueError:
                         print("Invalid input. Please enter a valid number.")
@@ -568,11 +607,16 @@ def betting_round(current_cll, last_bit, table):
         # Deal the player's cards
         if current_player.hand.flag == "bet":
             break
-        if current_player.hand.flag == "folds":
+        if current_player.hand.flag == "folds" or current_player.hand.flag == "all in":
             if current_player.next == current_cll.head:
                 break
             current_player = current_player.next
             continue
+        input("Enter for next player turn")
+        if os.name == 'posix':
+            os.system('clear')  # Clear the screen on Unix-based systems
+        else:
+            os.system('cls')  # Clear the screen on Windows
         print("######################################################")
         print(f"Cards on table : {table}")
         print("######################################################")
@@ -594,8 +638,9 @@ def betting_round(current_cll, last_bit, table):
                     print(f'Enter 1 for folds. ')
                     print(f'Enter 2 for call. ')
                     print(f'Enter 3 for bet. ')
+                    print(f'Enter 4 for all in. ')
                     chk = int(input(f"{current_player.data}, enter your choice : "))
-                    while chk != 1 and chk != 2 and chk != 3 :
+                    while chk != 1 and chk != 2 and chk != 3 and chk != 4:
                         chk = int(input(f"{current_player.data}, enter your choice : "))
                         
                     if chk == 1:
@@ -616,10 +661,10 @@ def betting_round(current_cll, last_bit, table):
                             current_player.hand.betting = current_bet
                             if current_player.hand.status == "big blind":
                                 current_player.hand.status = "big"
-                                current_player.chips += 10
+                                #current_player.chips += 10
                             elif    current_player.hand.status == "small blind":
                                 current_player.hand.status = "small"
-                                current_player.chips += 5
+                                #current_player.chips += 5
                     elif chk == 3 :
                         bet = int(input("Enter your bet : "))
                         while bet < current_bet :
@@ -631,17 +676,30 @@ def betting_round(current_cll, last_bit, table):
                         current_player.chips -= bet
                         if current_player.hand.status == "big blind":
                             current_player.hand.status = "big"
-                            current_player.chips += 10
+                            #current_player.chips += 10
                         elif    current_player.hand.status == "small blind":
                             current_player.hand.status = "small"
-                            current_player.chips += 5
+                            #current_player.chips += 5
                         table.pots += bet
                         current_cll.head = current_player.next
                         current_cll.tail = current_player
+                        
                         betting_game(current_cll,bet,table)
                         flag_bet = True
                         break
-                    print("###################################################################")    
+                    elif   chk == 4 :
+                            print("you all in your chips")
+                            print(f"Almost {current_player.chips}")
+                            table.pots += current_player.chips
+                            betting_game(current_cll,current_player.chips,table)
+                            current_player.chips = 0
+                            current_player.hand.flag == "all in"
+                            if current_player.hand.status == "big blind":
+                                current_player.hand.status = "big"
+                            elif    current_player.hand.status == "small blind":
+                                current_player.hand.status = "small"
+                    print("###################################################################") 
+                       
                     break
                 except ValueError:
                     print("Invalid input. Please enter a valid number.")
@@ -667,12 +725,16 @@ def betting_game(current_cll,last_bit,table):
         # Deal the player's cards
         if current_player.hand.flag == "bet":
             break
-        if current_player.hand.flag == "folds":
+        if current_player.hand.flag == "folds" or current_player.hand.flag == "all in":
             if current_player.next == current_cll.head:
                 break
             current_player = current_player.next
             continue
-
+        input("Enter for next player turn")
+        if os.name == 'posix':
+            os.system('clear')  # Clear the screen on Unix-based systems
+        else:
+            os.system('cls')  # Clear the screen on Windows
         print("######################################################")
         print(f"Cards on table : {table}")
         print("######################################################")
@@ -696,8 +758,9 @@ def betting_game(current_cll,last_bit,table):
                     print(f'Enter 1 for folds. ')
                     print(f'Enter 2 for call. ')
                     print(f'Enter 3 for bet. ')
+                    print(f'Enter 4 for all in. ')
                     chk = int(input(f"{current_player.data}, enter your choice : "))
-                    while chk != 1 and chk != 2 and chk != 3 :
+                    while chk != 1 and chk != 2 and chk != 3 and chk != 4:
                         chk = int(input(f"{current_player.data}, enter your choice : "))
                         
                     if chk == 1:
@@ -716,10 +779,10 @@ def betting_game(current_cll,last_bit,table):
                             current_player.hand.betting = current_bet
                             if current_player.hand.status == "big blind":
                                 current_player.hand.status = "big"
-                                current_player.chips += 10
+                                
                             elif    current_player.hand.status == "small blind":
                                 current_player.hand.status = "small"
-                                current_player.chips += 5
+                                
                     elif chk == 3 :
                         bet = int(input("Enter your bet : "))
                         while bet < current_bet :
@@ -731,19 +794,33 @@ def betting_game(current_cll,last_bit,table):
                         current_player.chips -= bet
                         if current_player.hand.status == "big blind":
                             current_player.hand.status = "big"
-                            current_player.chips += 10
+                            #current_player.chips += 10
                         elif    current_player.hand.status == "small blind":
                             current_player.hand.status = "small"
-                            current_player.chips += 5
+                            #current_player.chips += 5
                         table.pots += bet
                         current_cll.head = current_player.next
                         current_cll.tail = current_player
-                        flag_bet = True
-                        b = betting_game(current_cll,bet,table)
+                        
+                        betting_game(current_cll,bet,table)
                         flag_bet = True
                         print("bettinggggggggg")
                         break
-                    print("###################################################################")    
+                    
+                    elif   chk == 4 :
+                            print("you all in your chips")
+                            print(f"Almost {current_player.chips}")
+                            table.pots += current_player.chips
+                            betting_game(current_cll,current_player.chips,table)
+                            current_player.chips = 0
+                            current_player.hand.flag == "all in"
+                            if current_player.hand.status == "big blind":
+                                current_player.hand.status = "big"
+                            elif    current_player.hand.status == "small blind":
+                                current_player.hand.status = "small"
+                                
+                    print("###################################################################") 
+                       
                     break
                 except ValueError:
                     print("Invalid input. Please enter a valid number.")
@@ -1006,7 +1083,10 @@ def main_game(cll):
     sorted_cll = create_sorted_circular_link_list(sorted_players)
     # Create a new Circular_link_list with sorted players
     while True :
-        
+        if os.name == 'posix':
+            os.system('clear')  # Clear the screen on Unix-based systems
+        else:
+            os.system('cls')  # Clear the screen on Windows
         deck = Deck()
         deck.shuffle()
         table = Table()
@@ -1049,13 +1129,27 @@ def main_game(cll):
             
             if current_player.hand.flag != "folds":
                 
-                list1 = [current_player.hand.cards[0],current_player.hand.cards[1],table.cards[0],table.cards[1],table.cards[2]]
-                list2 = [current_player.hand.cards[1],table.cards[0],table.cards[1],table.cards[2],table.cards[3]]
-                list3 = [table.cards[0],table.cards[1],table.cards[2],table.cards[3],table.cards[4]]
-                list4 = [current_player.hand.cards[0],current_player.hand.cards[1],table.cards[0],table.cards[1],table.cards[3]]
-                list5 = [current_player.hand.cards[1],table.cards[0],table.cards[1],table.cards[2],table.cards[4]]
-                list6 = [current_player.hand.cards[0],table.cards[0],table.cards[1],table.cards[2],table.cards[4]]
-                list7 = [current_player.hand.cards[0],current_player.hand.cards[1],table.cards[0],table.cards[1],table.cards[3]]
+                list1 = [current_player.hand.cards[0], current_player.hand.cards[1], table.cards[0], table.cards[1],table.cards[2]]
+                list2 = [current_player.hand.cards[0], current_player.hand.cards[1], table.cards[0], table.cards[1],table.cards[3]]
+                list3 = [current_player.hand.cards[0], current_player.hand.cards[1], table.cards[0], table.cards[1],table.cards[4]]
+                list4 = [current_player.hand.cards[0], current_player.hand.cards[1], table.cards[0],table.cards[2],table.cards[3]]
+                list5 = [current_player.hand.cards[0], current_player.hand.cards[1], table.cards[0],table.cards[2],table.cards[4]]
+                list6 = [current_player.hand.cards[0], current_player.hand.cards[1], table.cards[0],table.cards[3],table.cards[4]]
+                list7 = [current_player.hand.cards[0], current_player.hand.cards[1], table.cards[1],table.cards[2],table.cards[3]]
+                list8 = [current_player.hand.cards[0], current_player.hand.cards[1], table.cards[1],table.cards[2],table.cards[4]]
+                list9 = [current_player.hand.cards[0], current_player.hand.cards[1], table.cards[1],table.cards[3],table.cards[4]]
+                list10 = [current_player.hand.cards[0], current_player.hand.cards[1],table.cards[2],table.cards[3],table.cards[4]]
+                list11 = [current_player.hand.cards[0], table.cards[0], table.cards[1],table.cards[2],table.cards[3]]
+                list12 = [current_player.hand.cards[0], table.cards[0], table.cards[1],table.cards[2],table.cards[4]]
+                list13 = [current_player.hand.cards[0], table.cards[0], table.cards[1],table.cards[3],table.cards[4]]
+                list14 = [current_player.hand.cards[0], table.cards[0],table.cards[2],table.cards[3],table.cards[4]]
+                list15 = [current_player.hand.cards[0], table.cards[1],table.cards[2],table.cards[3],table.cards[4]]
+                list16 = [current_player.hand.cards[1], table.cards[0], table.cards[1],table.cards[2],table.cards[3]]
+                list17 = [current_player.hand.cards[1], table.cards[0], table.cards[1],table.cards[2],table.cards[4]]
+                list18 = [current_player.hand.cards[1], table.cards[0], table.cards[1],table.cards[3],table.cards[4]]
+                list19 = [current_player.hand.cards[1], table.cards[0],table.cards[2],table.cards[3],table.cards[4]]
+                list20 = [current_player.hand.cards[1], table.cards[1],table.cards[2],table.cards[3],table.cards[4]]
+                list21 = [table.cards[0], table.cards[1],table.cards[2],table.cards[3],table.cards[4]]
                 isRoyal(list1)
                 isRoyal(list2)
                 isRoyal(list3)
@@ -1063,6 +1157,20 @@ def main_game(cll):
                 isRoyal(list5)
                 isRoyal(list6)
                 isRoyal(list7)
+                isRoyal(list8)
+                isRoyal(list9)
+                isRoyal(list10)
+                isRoyal(list11)
+                isRoyal(list12)
+                isRoyal(list13)
+                isRoyal(list14)
+                isRoyal(list15)
+                isRoyal(list16)
+                isRoyal(list17)
+                isRoyal(list18)
+                isRoyal(list19)
+                isRoyal(list20)
+                isRoyal(list21)
                 maxpoint=max(list_point)
                 current_player.hand.maxpoint = maxpoint
                 
@@ -1081,6 +1189,34 @@ def main_game(cll):
                     current_player.hand.best_cards = 6
                 elif maxindex == 6 :
                     current_player.hand.best_cards = 7
+                elif maxindex == 7 :
+                    current_player.hand.best_cards = 8
+                elif maxindex == 8 :
+                    current_player.hand.best_cards = 9
+                elif maxindex == 9 :
+                    current_player.hand.best_cards = 10
+                elif maxindex == 10 :
+                    current_player.hand.best_cards = 11
+                elif maxindex == 11 :
+                    current_player.hand.best_cards = 12
+                elif maxindex == 12 :
+                    current_player.hand.best_cards = 13
+                elif maxindex == 13 :
+                    current_player.hand.best_cards = 14
+                elif maxindex == 14 :
+                    current_player.hand.best_cards = 15
+                elif maxindex == 15 :
+                    current_player.hand.best_cards = 16
+                elif maxindex == 16 :
+                    current_player.hand.best_cards = 17
+                elif maxindex == 17 :
+                    current_player.hand.best_cards = 18
+                elif maxindex == 18 :
+                    current_player.hand.best_cards = 19
+                elif maxindex == 19 :
+                    current_player.hand.best_cards = 20
+                elif maxindex == 20 :
+                    current_player.hand.best_cards = 21
                 list_point = []
             if current_player.next == sorted_cll.head:
                 break
@@ -1097,45 +1233,95 @@ def main_game(cll):
             current_player = current_player.next
         point_of_winner = max(list_player_point)
 
-
-        current_player = sorted_cll.head
         
+        current_player = sorted_cll.head
+        count_winner = 0
+        list_winner = []
         while True:
             if current_player.hand.maxpoint == point_of_winner:
-                current_player.chips += table.pots
-                list1 = [current_player.hand.cards[0],current_player.hand.cards[1],table.cards[0],table.cards[1],table.cards[2]]
-                list2 = [current_player.hand.cards[1],table.cards[0],table.cards[1],table.cards[2],table.cards[3]]
-                list3 = [table.cards[0],table.cards[1],table.cards[2],table.cards[3],table.cards[4]]
-                list4 = [current_player.hand.cards[0],current_player.hand.cards[1],table.cards[0],table.cards[1],table.cards[3]]
-                list5 = [current_player.hand.cards[1],table.cards[0],table.cards[1],table.cards[2],table.cards[4]]
-                list6 = [current_player.hand.cards[0],table.cards[0],table.cards[1],table.cards[2],table.cards[4]]
-                list7 = [current_player.hand.cards[0],current_player.hand.cards[1],table.cards[0],table.cards[1],table.cards[3]]
-                print(f'Winner is : {current_player.data} get chips : {table.pots} pots size : {current_player.chips}')
+                count_winner += 1
+                list_winner.append(current_player)
+                list1 = [str(current_player.hand.cards[0]), str(current_player.hand.cards[1]), str(table.cards[0]), str(table.cards[1]),str(table.cards[2])]
+                list2 = [str(current_player.hand.cards[0]), str(current_player.hand.cards[1]), str(table.cards[0]), str(table.cards[1]),str(table.cards[3])]
+                list3 = [str(current_player.hand.cards[0]), str(current_player.hand.cards[1]), str(table.cards[0]), str(table.cards[1]),str(table.cards[4])]
+                list4 = [str(current_player.hand.cards[0]), str(current_player.hand.cards[1]), str(table.cards[0]),str(table.cards[2]),str(table.cards[3])]
+                list5 = [str(current_player.hand.cards[0]), str(current_player.hand.cards[1]), str(table.cards[0]),str(table.cards[2]),str(table.cards[4])]
+                list6 = [str(current_player.hand.cards[0]), str(current_player.hand.cards[1]), str(table.cards[0]),str(table.cards[3]),str(table.cards[4])]
+                list7 = [str(current_player.hand.cards[0]), str(current_player.hand.cards[1]), str(table.cards[1]),str(table.cards[2]),str(table.cards[3])]
+                list8 = [str(current_player.hand.cards[0]), str(current_player.hand.cards[1]), str(table.cards[1]),str(table.cards[2]),str(table.cards[4])]
+                list9 = [str(current_player.hand.cards[0]), str(current_player.hand.cards[1]), str(table.cards[1]),str(table.cards[3]),str(table.cards[4])]
+                list10 = [str(current_player.hand.cards[0]), str(current_player.hand.cards[1]),str(table.cards[2]),str(table.cards[3]),str(table.cards[4])]
+                list11 = [str(current_player.hand.cards[0]), str(table.cards[0]), str(table.cards[1]),str(table.cards[2]),str(table.cards[3])]
+                list12 = [str(current_player.hand.cards[0]), str(table.cards[0]), str(table.cards[1]),str(table.cards[2]),str(table.cards[4])]
+                list13 = [str(current_player.hand.cards[0]), str(table.cards[0]), str(table.cards[1]),str(table.cards[3]),str(table.cards[4])]
+                list14 = [str(current_player.hand.cards[0]), str(table.cards[0]),str(table.cards[2]),str(table.cards[3]),str(table.cards[4])]
+                list15 = [str(current_player.hand.cards[0]), str(table.cards[1]),str(table.cards[2]),str(table.cards[3]),str(table.cards[4])]
+                list16 = [str(current_player.hand.cards[1]), str(table.cards[0]), str(table.cards[1]),str(table.cards[2]),str(table.cards[3])]
+                list17 = [str(current_player.hand.cards[1]), str(table.cards[0]), str(table.cards[1]),str(table.cards[2]),str(table.cards[4])]
+                list18 = [str(current_player.hand.cards[1]), str(table.cards[0]), str(table.cards[1]),str(table.cards[3]),str(table.cards[4])]
+                list19 = [str(current_player.hand.cards[1]), str(table.cards[0]),str(table.cards[2]),str(table.cards[3]),str(table.cards[4])]
+                list20 = [str(current_player.hand.cards[1]), str(table.cards[1]),str(table.cards[2]),str(table.cards[3]),str(table.cards[4])]
+                list21 = [str(table.cards[0]), str(table.cards[1]),str(table.cards[2]),str(table.cards[3]),str(table.cards[4])]
+                
                 if current_player.hand.best_cards == 1 :
-                    print(f'Winner card : {current_player.hand.cards[0]} ,{current_player.hand.cards[1]} ,{table.cards[0]} , {table.cards[1]} ,{table.cards[2]}')
+                    print(f"Winner cards {list1} 1")
                 elif current_player.hand.best_cards == 2 :
-                    print(f'Winner card : {current_player.hand.cards[1]},{table.cards[0]},{table.cards[1]},{table.cards[2]},{table.cards[3]}')
+                    print(f"Winner cards {list2} 2")
                 elif current_player.hand.best_cards == 3 :
-                    print(f'Winner card : {table.cards[0],table.cards[1]},{table.cards[2]},{table.cards[3]},{table.cards[4]}')
+                    print(f"Winner cards {list3} 3")
                 elif current_player.hand.best_cards == 4 :
-                    print(f'Winner card : {current_player.hand.cards[0]},{current_player.hand.cards[1]},{table.cards[0]},{table.cards[1]},{table.cards[3]}')
+                    print(f"Winner cards {list4} 4")
                 elif current_player.hand.best_cards == 5 :
-                    print(f'Winner card : {current_player.hand.cards[1]},{table.cards[0]},{table.cards[1]},{table.cards[2]},{table.cards[4]}')
+                    print(f"Winner cards {list5} 5")
                 elif current_player.hand.best_cards == 6 :
-                    print(f'Winner card : {current_player.hand.cards[0]},{table.cards[0]},{table.cards[1]},{table.cards[2]},{table.cards[4]}')
+                    print(f"Winner cards {list6} 6")
                 elif current_player.hand.best_cards == 7 :
-                    print(f'Winner card : {current_player.hand.cards[0]},{current_player.hand.cards[1]},{table.cards[0]},{table.cards[1]},{table.cards[3]}')
+                    print(f"Winner cards {list7} 7")
+                elif current_player.hand.best_cards == 8 :
+                    print(f"Winner cards {list8} 8")
+                elif current_player.hand.best_cards == 9 :
+                    print(f"Winner cards {list9} 9")
+                elif current_player.hand.best_cards == 10 :
+                    print(f"Winner cards {list10} 10")
+                elif current_player.hand.best_cards == 11 :
+                    print(f"Winner cards {list11} 11")
+                elif current_player.hand.best_cards == 12 :
+                    print(f"Winner cards {list12} 12")
+                elif current_player.hand.best_cards == 13 :
+                    print(f"Winner cards {list13} 13")
+                elif current_player.hand.best_cards == 14 :
+                    print(f"Winner cards {list14} 14")
+                elif current_player.hand.best_cards == 15 :
+                    print(f"Winner cards {list15} 15")
+                elif current_player.hand.best_cards == 16 :
+                    print(f"Winner cards {list16} 16")
+                elif current_player.hand.best_cards == 17 :
+                    print(f"Winner cards {list17} 17")
+                elif current_player.hand.best_cards == 18 :
+                    print(f"Winner cards {list18} 18")
+                elif current_player.hand.best_cards == 19 :
+                    print(f"Winner cards {list19} 19")
+                elif current_player.hand.best_cards == 20 :
+                    print(f"Winner cards {list20} 20")
+                elif current_player.hand.best_cards == 21 :
+                    print(f"Winner cards {list21} 21")
+                
             if current_player.next == sorted_cll.head :
                 break
             else:
                 current_player = current_player.next
-
+        
+        winner_chips = (table.pots//count_winner)
+        for i in list_winner:
+            i.chips += winner_chips
+            print(f'Winner is : {i.data} get chips : {table.pots} pots size : {i.chips}')
+        
         sorted_cll.head = temp_head
         sorted_cll.tail = temp_tail 
         current_player = sorted_cll.head
         while True:
             current_player.hand.flag = ""
-            current_player.hand.status = ""
+            
             current_player.hand.betting = 0
             current_player.hand.maxpoint = 0
             current_player.hand.best_cards = []
@@ -1144,15 +1330,55 @@ def main_game(cll):
                 break
             else:
                 current_player = current_player.next
+        
+        
+        temp_head = sorted_cll.head  # Store the initial head
+        temp_tail = sorted_cll.tail  # Store the initial tail
+
+        pointer = sorted_cll.head
+        
+        while True:
+            if pointer.chips <= 0 : 
+                sorted_cll.delete_node(pointer.data)
+            if pointer.next == sorted_cll.head:
+                break
+            pointer = pointer.next
+        pointer = sorted_cll.head
+        while True:
+            if pointer.hand.status in ["Small Blind", "small blind", "small"]:
+                sorted_cll.add_status(pointer.data, "")
+                pointer = pointer.next
+                sorted_cll.add_status(pointer.data, "Small Blind")
+                pointer = pointer.next
+                sorted_cll.add_status(pointer.data, "Big Blind")
+                pointer = pointer.next
+                sorted_cll.add_status(pointer.data, "Dealer")
+                break
+
+            if pointer == temp_tail:
+                break
+            pointer = pointer.next
+
+        # Restore the head and tail
+        sorted_cll.head = temp_head
+        sorted_cll.tail = temp_tail
         current_player = sorted_cll.head
-        current_player.hand.status = "Dealer"
-        current_player.prev.hand.status = "Big Blind"
-        current_player.prev.prev.hand.status = "Small Blind"
         sorted_cll.head = current_player.next
         sorted_cll.tail = current_player
         table.pots = 0
-        input("Enter for next game ")
+        print("Enter 1 for next game")
+        print("Enter 2 for end game")
+        choice = input("Enter your choice : ")
+        while choice != "1" and choice != "2":
+            choice = input("Enter your choice : ")
+        if choice == "2" :
+            break
+        if os.name == 'posix':
+            os.system('clear')  # Clear the screen on Unix-based systems
+        else:
+            os.system('cls')  # Clear the screen on Windows
 
 list_point = []
 cll = Circular_link_list()     
 main_game(cll)
+
